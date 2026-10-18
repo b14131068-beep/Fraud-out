@@ -1,0 +1,261 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#17324d" />
+  <title>樂齡防詐小幫手</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <style>
+    :root { color-scheme: light; }
+    html { font-size: 20px; }
+    body { margin: 0; font-family: system-ui, -apple-system, BlinkMacSystemFont, "Noto Sans TC", sans-serif; }
+    button, a, textarea { -webkit-tap-highlight-color: transparent; }
+    button:focus-visible, a:focus-visible, textarea:focus-visible { outline: 4px solid #2563eb; outline-offset: 3px; }
+    .result-red { border-color: #b42318; background: #fef0ef; color: #7f1d1d; }
+    .result-yellow { border-color: #b45309; background: #fff7db; color: #78350f; }
+    .result-green { border-color: #15803d; background: #e8f7ec; color: #14532d; }
+    .tip-card { min-height: 90px; }
+    @media (max-width: 480px) { html { font-size: 18px; } }
+  </style>
+</head>
+<body class="bg-slate-100 text-slate-900">
+  <main class="min-h-screen px-3 py-5 sm:px-6">
+    <div class="mx-auto max-w-3xl space-y-5">
+      <header class="rounded-2xl bg-white p-5 shadow-sm">
+        <div class="mb-4 flex items-center gap-3">
+          <i data-lucide="shield-check" class="h-12 w-12 shrink-0 text-green-700" aria-hidden="true"></i>
+          <div>
+            <h1 class="text-2xl font-extrabold text-slate-900 sm:text-3xl">樂齡防詐小幫手</h1>
+            <p class="mt-1 text-xl text-slate-700">看不懂的訊息，先查一查再決定。</p>
+          </div>
+        </div>
+        <a href="tel:165" class="flex min-h-[76px] items-center justify-center gap-3 rounded-xl bg-red-700 p-4 text-center text-2xl font-extrabold text-white hover:bg-red-800">
+          <i data-lucide="phone-call" class="h-8 w-8 shrink-0" aria-hidden="true"></i>
+          <span>一鍵免費撥打 165</span>
+        </a>
+        <p class="mt-2 text-center text-xl font-bold text-slate-700">反詐騙專線</p>
+      </header>
+
+      <section class="space-y-4 rounded-2xl bg-white p-5 shadow-sm sm:p-7">
+        <h2 class="text-3xl font-extrabold text-slate-900 sm:text-4xl">防詐騙安全檢查</h2>
+        <p class="text-xl leading-relaxed text-slate-700">懷疑是詐騙？把網址或訊息貼上來，幫你檢查！</p>
+
+        <label for="message" class="block text-xl font-bold text-slate-900">收到的訊息或網址</label>
+        <textarea id="message" rows="5" placeholder="請在此處貼上您收到的訊息或網址..." class="min-h-48 w-full resize-y rounded-xl border-2 border-slate-500 p-4 text-xl leading-relaxed text-slate-900 placeholder:text-slate-500"></textarea>
+
+        <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
+          <button id="pasteBtn" class="flex min-h-[64px] items-center justify-center gap-2 rounded-xl border-2 border-slate-500 bg-white p-3 text-xl font-bold text-slate-900 hover:bg-slate-100">
+            <i data-lucide="clipboard" class="h-7 w-7" aria-hidden="true"></i> 一鍵貼上
+          </button>
+          <button id="voiceBtn" class="flex min-h-[64px] items-center justify-center gap-2 rounded-xl border-2 border-slate-500 bg-white p-3 text-xl font-bold text-slate-900 hover:bg-slate-100">
+            <i data-lucide="mic" class="h-7 w-7" aria-hidden="true"></i> 語音輸入
+          </button>
+        </div>
+
+        <p id="notice" role="status" aria-live="polite" class="hidden rounded-xl bg-blue-50 p-4 text-xl leading-relaxed text-blue-950"></p>
+
+        <button id="checkBtn" class="flex min-h-[76px] w-full items-center justify-center gap-3 rounded-xl bg-blue-800 p-4 text-center text-2xl font-extrabold text-white hover:bg-blue-900">
+          <i data-lucide="search" class="h-8 w-8 shrink-0" aria-hidden="true"></i>
+          立即檢查是不是詐騙
+        </button>
+        <p class="text-lg leading-relaxed text-slate-600">請勿貼上身分證字號、銀行密碼或簡訊驗證碼等私密資料。</p>
+
+        <div id="resultBox" class="hidden space-y-4 rounded-2xl border-4 p-5" aria-live="polite">
+          <h3 class="text-2xl font-extrabold">檢查結果（示範）</h3>
+          <p id="resultTitle" class="text-3xl font-extrabold leading-snug"></p>
+          <p id="resultDescription" class="text-xl leading-relaxed"></p>
+          <p class="text-lg leading-relaxed">本頁使用簡單的文字規則示範，不能真正確認訊息真偽。拿不準時，請撥打 165 詢問。</p>
+          <div class="space-y-2">
+            <p class="text-xl font-bold">切換燈號測試</p>
+            <div class="grid grid-cols-1 gap-2 sm:grid-cols-3">
+              <button data-result="red" class="min-h-[60px] rounded-xl border-2 border-red-700 bg-white p-3 text-xl font-bold text-slate-900">🔴 紅燈</button>
+              <button data-result="yellow" class="min-h-[60px] rounded-xl border-2 border-amber-600 bg-white p-3 text-xl font-bold text-slate-900">🟡 黃燈</button>
+              <button data-result="green" class="min-h-[60px] rounded-xl border-2 border-green-700 bg-white p-3 text-xl font-bold text-slate-900">🟢 綠燈</button>
+            </div>
+          </div>
+          <button id="resetBtn" class="flex min-h-[64px] w-full items-center justify-center gap-2 rounded-xl border-2 border-current bg-white p-3 text-xl font-bold">
+            <i data-lucide="rotate-ccw" class="h-6 w-6" aria-hidden="true"></i> 再查一次
+          </button>
+        </div>
+      </section>
+
+      <section class="space-y-4 rounded-2xl bg-white p-5 shadow-sm sm:p-7">
+        <h2 class="text-2xl font-extrabold text-slate-900 sm:text-3xl">近期常見詐騙招數</h2>
+        <p class="text-xl text-slate-700">看到類似的內容，先停下來確認。</p>
+        <div id="tipsGrid" class="grid grid-cols-1 gap-3 sm:grid-cols-2"></div>
+      </section>
+
+      <footer class="space-y-3 rounded-2xl bg-slate-900 p-6 text-center text-white">
+        <i data-lucide="shield-alert" class="mx-auto h-10 w-10" aria-hidden="true"></i>
+        <h2 class="text-2xl font-extrabold">有疑慮，先不要轉帳！</h2>
+        <p class="text-xl leading-relaxed">本系統僅供輔助參考，如有疑慮請撥打 165。</p>
+        <a href="tel:165" class="flex min-h-[68px] items-center justify-center gap-2 rounded-xl bg-red-700 p-4 text-xl font-extrabold text-white hover:bg-red-800">
+          <i data-lucide="phone-call" class="h-7 w-7" aria-hidden="true"></i> 撥打 165 反詐騙專線
+        </a>
+      </footer>
+    </div>
+  </main>
+
+  <script>
+    const results = {
+      red: {
+        title: "🔴 極危險！這是詐騙！",
+        description: "千萬不要相信！不要點進去，也不要給對方任何錢或個人資料。",
+        className: "result-red"
+      },
+      yellow: {
+        title: "🟡 要注意！有可疑的地方",
+        description: "請先找家人討論，不要急著跟著訊息做！",
+        className: "result-yellow"
+      },
+      green: {
+        title: "🟢 暫未發現異常",
+        description: "目前沒有發現明顯的詐騙特徵，但依然要保持警覺喔！",
+        className: "result-green"
+      }
+    };
+
+    const tips = [
+      {
+        icon: "📱",
+        title: "LINE 免費貼圖詐騙",
+        detail: "小心要求點陌生連結、填個人資料或輸入驗證碼才能領貼圖的訊息。",
+        advice: "不要輸入密碼或驗證碼，先向官方確認。",
+        color: "bg-blue-50"
+      },
+      {
+        icon: "🛒",
+        title: "一頁式超便宜購物詐騙",
+        detail: "價格便宜得不合理、店家資料不清楚，或一直催促你下單，都要小心。",
+        advice: "先查店家評價與聯絡資料，避免匯款到私人帳戶。",
+        color: "bg-orange-50"
+      },
+      {
+        icon: "📈",
+        title: "飆股投資簡訊詐騙",
+        detail: "有人保證穩賺不賠，邀你加入投資群組，或要求轉帳到指定帳戶。",
+        advice: "不要急著匯款，先向合法金融機構查證。",
+        color: "bg-purple-50"
+      },
+      {
+        icon: "🏛️",
+        title: "假冒警察／銀行帳戶凍結",
+        detail: "有人說你的帳戶涉案、要監管帳戶，或要求交出提款卡與密碼。",
+        advice: "不要轉帳或交出密碼，掛斷電話後自行查詢官方電話。",
+        color: "bg-teal-50"
+      }
+    ];
+
+    const messageEl = document.getElementById("message");
+    const noticeEl = document.getElementById("notice");
+    const resultBox = document.getElementById("resultBox");
+    const resultTitle = document.getElementById("resultTitle");
+    const resultDescription = document.getElementById("resultDescription");
+
+    function showNotice(text) {
+      noticeEl.textContent = text;
+      noticeEl.classList.remove("hidden");
+    }
+
+    function hideNotice() {
+      noticeEl.textContent = "";
+      noticeEl.classList.add("hidden");
+    }
+
+    function showResult(key) {
+      const result = results[key];
+      resultBox.classList.remove("hidden", "result-red", "result-yellow", "result-green");
+      resultBox.classList.add(result.className);
+      resultTitle.textContent = result.title;
+      resultDescription.textContent = result.description;
+    }
+
+    function checkMessage(message) {
+      const highRisk = /驗證碼|監管帳戶|帳戶凍結|保證獲利|穩賺不賠|立即匯款|輸入密碼|交出提款卡|涉案/.test(message);
+      const suspicious = /限時|免費|超低價|投資群組|領取|中獎|匯款|點擊|網址|帳戶/.test(message);
+
+      if (highRisk) return "red";
+      if (suspicious) return "yellow";
+      // 無法判定時，不顯示綠燈，避免讓人誤以為一定安全。
+      return "yellow";
+    }
+
+    document.getElementById("pasteBtn").addEventListener("click", async () => {
+      try {
+        if (!navigator.clipboard || !navigator.clipboard.readText) {
+          showNotice("請長按輸入框，再選擇「貼上」。");
+          return;
+        }
+        const text = await navigator.clipboard.readText();
+        if (!text) {
+          showNotice("剪貼簿沒有文字，請先複製要檢查的訊息。");
+          return;
+        }
+        messageEl.value = text;
+        resultBox.classList.add("hidden");
+        showNotice("已貼上訊息，請按下檢查按鈕。");
+      } catch (error) {
+        showNotice("無法直接讀取剪貼簿，請長按輸入框選擇「貼上」。");
+      }
+    });
+
+    document.getElementById("voiceBtn").addEventListener("click", () => {
+      showNotice("語音輸入目前是介面示意。您可以使用手機鍵盤上的麥克風說出訊息，再貼到上方。");
+    });
+
+    document.getElementById("checkBtn").addEventListener("click", () => {
+      const message = messageEl.value.trim();
+      if (!message) {
+        showNotice("請先貼上收到的訊息或網址。");
+        resultBox.classList.add("hidden");
+        return;
+      }
+      showResult(checkMessage(message));
+      showNotice("這是初步示範結果，並非官方查證。");
+    });
+
+    document.querySelectorAll("[data-result]").forEach((button) => {
+      button.addEventListener("click", () => showResult(button.dataset.result));
+    });
+
+    document.getElementById("resetBtn").addEventListener("click", () => {
+      messageEl.value = "";
+      resultBox.classList.add("hidden");
+      hideNotice();
+      messageEl.focus();
+    });
+
+    const tipsGrid = document.getElementById("tipsGrid");
+    tips.forEach((tip, index) => {
+      const article = document.createElement("article");
+      article.className = `tip-card rounded-xl border-2 border-slate-200 ${tip.color} p-4`;
+      article.innerHTML = `
+        <button type="button" aria-expanded="false" aria-controls="tip-detail-${index}" class="flex min-h-[76px] w-full items-center gap-3 text-left">
+          <span class="text-4xl" aria-hidden="true">${tip.icon}</span>
+          <span class="flex-1 text-xl font-extrabold leading-snug text-slate-900">${tip.title}</span>
+          <i data-lucide="chevron-down" class="h-7 w-7 shrink-0" aria-hidden="true"></i>
+        </button>
+        <div id="tip-detail-${index}" class="mt-3 hidden space-y-3 border-t-2 border-slate-200 pt-3">
+          <p class="text-xl leading-relaxed text-slate-800">${tip.detail}</p>
+          <p class="text-xl font-bold leading-relaxed text-blue-950">你可以這樣做：${tip.advice}</p>
+        </div>
+      `;
+      const button = article.querySelector("button");
+      const detail = article.querySelector(`#tip-detail-${index}`);
+      const icon = button.querySelector("[data-lucide]");
+      button.addEventListener("click", () => {
+        const isOpen = !detail.classList.contains("hidden");
+        detail.classList.toggle("hidden", isOpen);
+        button.setAttribute("aria-expanded", String(!isOpen));
+        icon.setAttribute("data-lucide", isOpen ? "chevron-down" : "chevron-up");
+        if (window.lucide) window.lucide.createIcons();
+      });
+      tipsGrid.appendChild(article);
+    });
+
+    if (window.lucide) window.lucide.createIcons();
+  </script>
+</body>
+</html>
